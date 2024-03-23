@@ -23,27 +23,44 @@ func NewMongoFloodControl(mongo *mongo.Database, window time.Duration, maxCalls 
 }
 
 func (rfc *MongoFloodControl) Check(ctx context.Context, userID int64) (bool, error) {
+	session, err := rfc.mongo.Client().StartSession()
+	if err != nil {
+		return false, err
+	}
+	defer session.EndSession(ctx)
+
 	now := time.Now().Unix()
+	var count int64
 
-	filter := bson.M{
-		"userID":    userID,
-		"timestamp": bson.M{"$lt": now - int64(rfc.window.Seconds())},
-	}
+	err = mongo.WithSession(ctx, session, func(sessionCtx mongo.SessionContext) error {
+		filter := bson.M{
+			"userID":    userID,
+			"timestamp": bson.M{"$lt": now - int64(rfc.window.Seconds())},
+		}
 
-	_, err := rfc.mongo.Collection("calls").DeleteMany(ctx, filter)
-	if err != nil {
-		return false, err
-	}
+		// Удаляем записи о старых вызовах за пределами текущего интервала
+		_, err := rfc.mongo.Collection("calls").DeleteMany(ctx, filter)
+		if err != nil {
+			return err
+		}
 
-	count, err := rfc.mongo.Collection("calls").CountDocuments(ctx, bson.M{})
-	if err != nil {
-		return false, err
-	}
+		// Считаем количество оставшихся документов (количество вызовов за последние N секунд)
+		count, err = rfc.mongo.Collection("calls").CountDocuments(ctx, bson.M{})
+		if err != nil {
+			return err
+		}
 
-	rfc.mongo.Collection("calls").InsertOne(ctx, map[string]interface{}{
-		"userID":    userID,
-		"timestamp": now,
+		// Вставляем информацию о текущем вызове
+		rfc.mongo.Collection("calls").InsertOne(ctx, map[string]interface{}{
+			"userID":    userID,
+			"timestamp": now,
+		})
+
+		return nil
 	})
+	if err != nil {
+		return false, err
+	}
 
 	if count+1 > int64(rfc.maxCalls) {
 		return false, nil
