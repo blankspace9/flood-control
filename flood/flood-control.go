@@ -45,7 +45,7 @@ func (rfc *MongoFloodControl) Check(ctx context.Context, userID int64) (bool, er
 		}
 
 		// Считаем количество оставшихся документов (количество вызовов за последние N секунд)
-		count, err = rfc.mongo.Collection("calls").CountDocuments(ctx, bson.M{})
+		count, err = rfc.mongo.Collection("calls").CountDocuments(ctx, bson.M{"userID": userID})
 		if err != nil {
 			return err
 		}

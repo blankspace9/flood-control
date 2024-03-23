@@ -46,6 +46,7 @@ func CheckFlood(fc FloodControl) {
 		cnt    int
 	}{
 		{userID: 1, wait: 1, cnt: 7},
+		{userID: 2, wait: 1, cnt: 2},
 		{userID: 1, wait: 6, cnt: 2},
 	}
 
