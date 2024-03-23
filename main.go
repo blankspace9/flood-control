@@ -47,7 +47,7 @@ func CheckFlood(fc FloodControl) {
 	}{
 		{userID: 1, wait: 1, cnt: 7},
 		{userID: 2, wait: 1, cnt: 2},
-		{userID: 1, wait: 6, cnt: 2},
+		{userID: 1, wait: 5, cnt: 2},
 	}
 
 	for _, c := range calls {
