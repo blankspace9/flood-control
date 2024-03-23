@@ -11,7 +11,7 @@ import (
 
 type (
 	Config struct {
-		Mongo    Mongo         `yaml:"mongo"`
+		Mongo    Mongo
 		Window   time.Duration `yaml:"window" env-required:"true"`
 		MaxCalls int           `yaml:"max_calls" env-required:"true"`
 	}
