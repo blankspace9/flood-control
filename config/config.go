@@ -6,18 +6,23 @@ import (
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 )
 
 type (
 	Config struct {
-		Redis    Redis         `yaml:"redis"`
-		Interval time.Duration `yaml:"interval" env-required:"true"`
+		Mongo    Mongo         `yaml:"mongo"`
+		Window   time.Duration `yaml:"window" env-required:"true"`
 		MaxCalls int           `yaml:"max_calls" env-required:"true"`
 	}
 
-	Redis struct {
-		Addr            string `yaml:"addr" env-required:"true"`
-		FloodControlKey string `yaml:"flood_control_key" env-required:"true"`
+	Mongo struct {
+		Host     string        `env:"MONGODB_HOST"`
+		Port     int           `env:"MONGODB_PORT"`
+		Username string        `env:"MONGODB_USERNAME"`
+		Password string        `env:"MONGODB_PASSWORD"`
+		DBName   string        `env:"MONGODB_DBNAME"`
+		Timeout  time.Duration `env:"MONGODB_TIMEOUT"`
 	}
 )
 
@@ -35,6 +40,14 @@ func MustLoad() *Config {
 	var cfg Config
 
 	if err := cleanenv.ReadConfig(path, &cfg); err != nil {
+		panic("failed to read config: " + err.Error())
+	}
+
+	if err := godotenv.Load(".env"); err != nil {
+		panic("failed to load .env file: " + err.Error())
+	}
+
+	if err := cleanenv.ReadEnv(&cfg.Mongo); err != nil {
 		panic("failed to read config: " + err.Error())
 	}
 
