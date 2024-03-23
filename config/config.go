@@ -8,10 +8,18 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-type Config struct {
-	Interval time.Duration `yaml:"interval" env-required:"true"`
-	MaxCalls int           `yaml:"max_calls" env-required:"true"`
-}
+type (
+	Config struct {
+		Redis    Redis         `yaml:"redis"`
+		Interval time.Duration `yaml:"interval" env-required:"true"`
+		MaxCalls int           `yaml:"max_calls" env-required:"true"`
+	}
+
+	Redis struct {
+		Addr            string `yaml:"addr" env-required:"true"`
+		FloodControlKey string `yaml:"flood_control_key" env-required:"true"`
+	}
+)
 
 func MustLoad() *Config {
 	path := fetchConfigPath()
