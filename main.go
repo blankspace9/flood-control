@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"task/config"
 )
 
 func main() {
-
+	cfg := config.MustLoad()
+	fmt.Println(cfg)
 }
 
 // FloodControl интерфейс, который нужно реализовать.
